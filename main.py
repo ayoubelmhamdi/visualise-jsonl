@@ -9,7 +9,6 @@
 # datasete/s5/examens/2010
 # datasete/s5/serie_6
 
-
 import os
 import sys
 
@@ -32,7 +31,7 @@ def generate_csv():
         if not os.path.exists(directory):
             sys.exit(f"Error: Directory {directory} does not exist")
         
-        subdirs = []
+        subdirs = [directory]
         for root, dirs, files in os.walk(directory):
             if root != directory:
                 subdirs.append(root)
@@ -93,16 +92,29 @@ def render_csv(csv_content):
                 if directory.startswith(root):
                     if root not in root_groups:
                         root_groups[root] = {}
-                    relative = directory[len(root):].lstrip('/')
+                    
+                    if directory == root:
+                        relative = "."
+                    else:
+                        relative = directory[len(root):].lstrip('/')
+                    
                     boxes = ''.join([foo(s) for s in statuses])
                     root_groups[root][relative] = boxes
                     break
     
     for root in root_groups:
+        tree_data = root_groups[root]
+        
+        if list(tree_data.keys()) == ["."]:
+            print(f"{tree_data['.']} {root}/")
+            continue
+        
         print(f"    {root}/")
         
-        tree_data = root_groups[root]
-        paths = sorted(tree_data.keys())
+        paths = sorted([p for p in tree_data.keys() if p != "."])
+        
+        if not paths:
+            continue
         
         def build_hierarchy():
             hierarchy = {}
