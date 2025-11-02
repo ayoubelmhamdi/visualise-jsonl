@@ -2,13 +2,21 @@
 import os
 import sys
 
-def main():
+RED    = '\033[31m'
+YELLOW = '\033[33m'
+GREEN  = '\033[32m'
+RESET  = '\033[0m'
+
+SQUARE = '■'
+
+def generate_csv():
     try:
         with open('input.txt', 'r') as f:
             directories = [line.strip() for line in f if line.strip()]
     except FileNotFoundError:
         sys.exit("Error: input.txt not found")
     
+    result = []
     for directory in directories:
         if not os.path.exists(directory):
             sys.exit(f"Error: Directory {directory} does not exist")
@@ -25,10 +33,46 @@ def main():
                     flag = 'A' if os.path.getsize(filepath) > 0 else 'B'
                 else:
                     flag = 'C'
-                print(f"{flag}, {filepath}")
-            print()
+                result.append(f"{flag}, {filepath}")
+            result.append("")
+    
+    return '\n'.join(result)
+
+def foo(status):
+    if status == -1:
+        return f"{RED}{SQUARE}{RESET}"
+    if status == 0:
+        return f"{YELLOW}{SQUARE}{RESET}"
+    if status == 1:
+        return f"{GREEN}{SQUARE}{RESET}"
+    return SQUARE
+
+def render_csv(csv_content):
+    lines = csv_content.strip().split('\n')
+    
+    for i in range(0, len(lines), 4):
+        if i + 2 >= len(lines):
+            break
+        
+        statuses = []
+        directory = None
+        
+        for j in range(3):
+            line = lines[i + j]
+            if not line.strip():
+                continue
+            parts = line.split(', ', 1)
+            if len(parts) == 2:
+                flag, filepath = parts
+                if directory is None:
+                    directory = os.path.dirname(filepath)
+                
+                statuses.append(1 if flag == 'A' else 0 if flag == 'B' else -1)
+        
+        if directory and len(statuses) == 3:
+            boxes = ''.join([foo(s) for s in statuses])
+            print(f"{boxes} {directory}")
 
 if __name__ == '__main__':
-    main()
-
-
+    csv_content = generate_csv()
+    render_csv(csv_content)
