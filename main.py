@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+
+# How to test this code:
+# create a test directoies
+# mkdir -p datasete/s5/examens/2010/{exercice,prob1} datasete/s5/serie_6/{exercice1/{1,2},ex2/{prob,qcm},exercice2/{1,3},ex1/{prob,qcm}}
+# touch datasete/s5/examens/2010/exercice/{input.md,metadata.md} datasete/s5/serie_6/exercice1/2/{input.md,output.md} datasete/s5/serie_6/ex1/prob/{input.md,output.md}
+
+# and put this lines on input.txt
+# datasete/s5/examens/2010
+# datasete/s5/serie_6
+
+
 import os
 import sys
 
