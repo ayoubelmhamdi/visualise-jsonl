@@ -81,21 +81,52 @@ def render_csv(csv_content):
             for root in roots:
                 if directory.startswith(root):
                     if root not in root_groups:
-                        root_groups[root] = []
+                        root_groups[root] = {}
                     relative = directory[len(root):].lstrip('/')
                     boxes = ''.join([foo(s) for s in statuses])
-                    root_groups[root].append((relative, boxes))
+                    root_groups[root][relative] = boxes
                     break
     
     for root in root_groups:
         print(f"    {root}/")
-        subdirs = root_groups[root]
-        for idx, (relative, boxes) in enumerate(subdirs):
-            prefix = "└──" if idx == len(subdirs) - 1 else "├──"
-            print(f"{boxes} {prefix} /{relative}")
+        
+        tree_data = root_groups[root]
+        paths = sorted(tree_data.keys())
+        
+        def build_hierarchy():
+            hierarchy = {}
+            for path in paths:
+                parts = path.split('/')
+                current = hierarchy
+                for part in parts:
+                    if part not in current:
+                        current[part] = {}
+                    current = current[part]
+            return hierarchy
+        
+        def print_node(node, path_prefix="", tree_prefix="", is_last=True):
+            items = sorted(node.items())
+            for idx, (name, children) in enumerate(items):
+                is_last_child = idx == len(items) - 1
+                
+                current_path = f"{path_prefix}/{name}" if path_prefix else name
+                has_data = current_path in tree_data
+                boxes = tree_data.get(current_path, "")
+                
+                connector = "└──" if is_last_child else "├──"
+                
+                if has_data and not children:
+                    print(f"{boxes} {tree_prefix}{connector} /{name}")
+                elif children:
+                    print(f"    {tree_prefix}{connector} /{name}")
+                    continuation = "    " if is_last_child else "│   "
+                    print_node(children, current_path, tree_prefix + continuation, is_last_child)
+                else:
+                    print(f"{boxes} {tree_prefix}{connector} /{name}")
+        
+        hierarchy = build_hierarchy()
+        print_node(hierarchy)
 
 if __name__ == '__main__':
     csv_content = generate_csv()
     render_csv(csv_content)
-
-
