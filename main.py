@@ -50,6 +50,8 @@ def foo(status):
 def render_csv(csv_content):
     lines = csv_content.strip().split('\n')
     
+    root_groups = {}
+    
     for i in range(0, len(lines), 4):
         if i + 2 >= len(lines):
             break
@@ -70,9 +72,30 @@ def render_csv(csv_content):
                 statuses.append(1 if flag == 'A' else 0 if flag == 'B' else -1)
         
         if directory and len(statuses) == 3:
-            boxes = ''.join([foo(s) for s in statuses])
-            print(f"{boxes} {directory}")
+            try:
+                with open('input.txt', 'r') as f:
+                    roots = [line.strip() for line in f if line.strip()]
+            except FileNotFoundError:
+                continue
+            
+            for root in roots:
+                if directory.startswith(root):
+                    if root not in root_groups:
+                        root_groups[root] = []
+                    relative = directory[len(root):].lstrip('/')
+                    boxes = ''.join([foo(s) for s in statuses])
+                    root_groups[root].append((relative, boxes))
+                    break
+    
+    for root in root_groups:
+        print(f"    {root}/")
+        subdirs = root_groups[root]
+        for idx, (relative, boxes) in enumerate(subdirs):
+            prefix = "└──" if idx == len(subdirs) - 1 else "├──"
+            print(f"{boxes} {prefix} /{relative}")
 
 if __name__ == '__main__':
     csv_content = generate_csv()
     render_csv(csv_content)
+
+
